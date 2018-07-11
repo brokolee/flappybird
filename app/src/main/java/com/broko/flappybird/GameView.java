@@ -20,6 +20,7 @@ import java.util.List;
 import java.util.Random;
 
 //GameView Class
+//added no reply EMail - Test#2
 
 
 class GameView extends SurfaceView implements android.view.SurfaceHolder.Callback {
