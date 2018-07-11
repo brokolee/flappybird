@@ -19,6 +19,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
+//GameView Class
+
 
 class GameView extends SurfaceView implements android.view.SurfaceHolder.Callback {
 
