@@ -11,7 +11,7 @@ public class MainActivity extends Activity{
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
-                WindowManager.LayoutParams.FLAG_FULLSCREEN);
+                WindowManager.LayoutParams.FLAG_HARDWARE_ACCELERATED);
         this.requestWindowFeature(Window.FEATURE_NO_TITLE);
         setContentView(new GameView(this));
 

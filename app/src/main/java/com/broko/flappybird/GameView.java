@@ -1,6 +1,10 @@
 package com.broko.flappybird;
 
 
+// TODO: 11.07.2018 collision detection 
+// TODO: 11.07.2018 smooth out going up 
+// TODO: 11.07.2018 optimization 
+
 import android.content.Context;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
@@ -13,21 +17,18 @@ import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 
 
-
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
-
-//GameView Class
-//added no reply EMail - Test#2
 
 
 class GameView extends SurfaceView implements android.view.SurfaceHolder.Callback {
 
     private MainThread thread;
     private CharacterSprite characterSprite;
-    public static int GAPHEIGHT = 500;
+    private PipeSprite pipe1,pipe2,pipe3;
+    BackgroundSprite background;
+    public static int GAPHEIGHT = 1000;
     public static int VELOCITY = 10;
     public static int SCREENHEIGHT = Resources.getSystem().getDisplayMetrics().heightPixels;
     public static int SCREENWIDTH = Resources.getSystem().getDisplayMetrics().widthPixels;
@@ -47,29 +48,23 @@ class GameView extends SurfaceView implements android.view.SurfaceHolder.Callbac
 
     @Override
     public void surfaceCreated(SurfaceHolder holder) {
+        makeLevel();
         thread.setRunning(true);
         thread.start();
-        Bitmap upflap = BitmapFactory.decodeResource(getResources(), R.drawable.redbird_upflap);
-        Bitmap midflap = BitmapFactory.decodeResource(getResources(),R.drawable.redbird_midflap);
-        Bitmap downflap = BitmapFactory.decodeResource(getResources(),R.drawable.redbird_downflap);
-        characterSprite = new CharacterSprite();
-        characterSprite.addBitmap(upflap);
-        characterSprite.addBitmap(midflap);
-        characterSprite.addBitmap(downflap);
-        makeLevel();
-
     }
 
     @Override
     public void draw(Canvas canvas) {
         super.draw(canvas);
+
         if (canvas != null) {
             canvas.drawColor(Color.BLACK);
+            background.draw(canvas);
             characterSprite.draw(canvas);
-            for (int i = 0; i < pipes.size(); i++) {
-                pipes.get(i).draw(canvas);
+            pipe1.draw(canvas);
+            pipe2.draw(canvas);
+            pipe3.draw(canvas);
 
-            }
         }
     }
 
@@ -105,60 +100,65 @@ class GameView extends SurfaceView implements android.view.SurfaceHolder.Callbac
     }
 
     public void update() {
+        logic();
         characterSprite.update();
 
-        for (int i = 0; i < pipes.size(); i++) {
-            pipes.get(i).update();
+        pipe1.update();
+        pipe2.update();
+        pipe3.update();
+
+
         }
-        logic();
 
-        if(thread.getFrameCount() == 60){
-            characterSprite.flap();}
 
-    }
 
     public void makeLevel() {
+
+
+        background = new BackgroundSprite(BitmapFactory.decodeResource(getResources(), R.drawable.background_day));
+
+        Bitmap upflap = BitmapFactory.decodeResource(getResources(), R.drawable.redbird_upflap);
+        Bitmap midflap = BitmapFactory.decodeResource(getResources(), R.drawable.redbird_midflap);
+        Bitmap downflap = BitmapFactory.decodeResource(getResources(), R.drawable.redbird_downflap);
+        characterSprite = new CharacterSprite();
+        characterSprite.setCurrentImage(upflap);
+        characterSprite.addBitmap(upflap);
+        characterSprite.addBitmap(midflap);
+        characterSprite.addBitmap(downflap);
+
+
         Bitmap bmp;
         Bitmap bmp2;
 
         bmp = getResizedBitmap(BitmapFactory.decodeResource
-                        (getResources(), R.drawable.pipe_green), 500,
-                Resources.getSystem().getDisplayMetrics().heightPixels / 2);
-        bmp2 = getResizedBitmap(BitmapFactory.decodeResource
-                        (getResources(), R.drawable.pipe_green_up), 500,
-                Resources.getSystem().getDisplayMetrics().heightPixels / 2);
+                (getResources(), R.drawable.pipe_green), 500, Resources.getSystem().getDisplayMetrics().heightPixels / 2);
+        bmp2 = getResizedBitmap
+                (BitmapFactory.decodeResource(getResources(), R.drawable.pipe_green_up), 500, Resources.getSystem().getDisplayMetrics().heightPixels / 2);
+        pipe1 = new PipeSprite(bmp, bmp2, 2000, 0);
+        pipe2 = new PipeSprite(bmp, bmp2, 3200, -250);
+        pipe3 = new PipeSprite(bmp, bmp2, 4500, 250);
 
-        PipeSprite pipe1 = new PipeSprite(bmp, bmp2, 2000, 0);
-        PipeSprite pipe2 = new PipeSprite(bmp, bmp2, 3200, -250);
-        PipeSprite pipe3 = new PipeSprite(bmp, bmp2, 4500, 250);
 
-        pipes = new ArrayList<>();
-        pipes.add(pipe1);
-        pipes.add(pipe2);
-        pipes.add(pipe3);
         System.out.println("MAKE LEVEL complete");
     }
 
 
     public void logic() {
 
-
+        List<PipeSprite> pipes = new ArrayList<>();
+        pipes.add(pipe1);
+        pipes.add(pipe2);
+        pipes.add(pipe3);
 
         for (int i = 0; i < pipes.size(); i++) {
             //Detect if the character is touching one of the pipes
-            if (characterSprite.y < pipes.get(i).yY + (SCREENHEIGHT / 2)
-                    - (GAPHEIGHT / 2) && characterSprite.x + 300 > pipes.get(i).xX
-                    && characterSprite.x < pipes.get(i).xX + 500) {
+            if (characterSprite.y < pipes.get(i).yY + (SCREENHEIGHT / 2) - (GAPHEIGHT / 2) && characterSprite.x + 300 > pipes.get(i).xX && characterSprite.x < pipes.get(i).xX + 500) {
                 resetLevel();
-            } else if (characterSprite.y + 240 > (SCREENHEIGHT / 2) +
-                    (GAPHEIGHT / 2) + pipes.get(i).yY
-                    && characterSprite.x + 300 > pipes.get(i).xX
-                    && characterSprite.x < pipes.get(i).xX + 500) {
+            } else if (characterSprite.y + 240 > (SCREENHEIGHT / 2) + (GAPHEIGHT / 2) + pipes.get(i).yY && characterSprite.x + 300 > pipes.get(i).xX && characterSprite.x < pipes.get(i).xX + 500) {
                 resetLevel();
             }
 
-            //Detect if the pipe has gone off the left of the
-            //screen and regenerate further ahead
+            //Detect if the pipe has gone off the left of the screen and regenerate further ahead
             if (pipes.get(i).xX + 500 < 0) {
                 Random r = new Random();
                 int value1 = r.nextInt(500);
@@ -168,21 +168,24 @@ class GameView extends SurfaceView implements android.view.SurfaceHolder.Callbac
             }
         }
 
-        //Detect if the character has gone off the
-        //bottom or top of the screen
+        //Detect if the character has gone off the bottom or top of the screen
         if (characterSprite.y + 240 < 0) {
             resetLevel(); }
         if (characterSprite.y > SCREENHEIGHT) {
             resetLevel(); }
     }
 
+
     public void resetLevel() {
         characterSprite.y = 100;
-        for (int i = 0; i < pipes.size(); i++) {
-            pipes.get(i).resetXY();
-            System.out.println("RESET");
-
-        }}
+        pipe1.xX = 2000;
+        pipe1.yY = 0;
+        pipe2.xX = 4500;
+        pipe2.yY = 200;
+        pipe3.xX = 3200;
+        pipe3.yY = 250;
+        System.out.println("RESET");
+    }
 
     //Helper Methods
 

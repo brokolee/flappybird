@@ -12,6 +12,8 @@ public class CharacterSprite {
     public int x, y, yVelocity, xVelocity;
     private int screenWidth;
     private int screenHeight;
+
+
     private Bitmap currentImage;
     int flapCount;
 
@@ -29,24 +31,14 @@ public class CharacterSprite {
         System.out.println("height: " + screenHeight);
     }
 
+    public void setCurrentImage(Bitmap currentImage) {
+        this.currentImage = currentImage;
+    }
+
     public void addBitmap(Bitmap image) {
         imageList.add(image);
-        if (imageList.isEmpty()) {
-            currentImage = imageList.getFirst();
-        }
     }
 
-    public void flap() {
-
-        if (flapCount < imageList.size()) {
-            flapCount++;
-            currentImage = imageList.get(flapCount);
-        } else {
-            flapCount = 0;
-            currentImage = imageList.get(flapCount);
-        }
-
-    }
 
 
     public void draw(Canvas canvas) {
